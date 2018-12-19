@@ -16,14 +16,13 @@ public class Sender {
     private static Queue queue;
     
    static  Scanner scan = new Scanner(System.in);
-    
-    
+   
+   
     public static void main(String[] args) {
         
         JMSContext jmsContext = connectionFactory.createContext();
         JMSProducer jmsProducer = jmsContext.createProducer();
-        
-        
+           
         System.out.println("Sending message to JMS - ");
         System.out.println("Welcome to chat, please enter username");
         String username = scan.nextLine();
