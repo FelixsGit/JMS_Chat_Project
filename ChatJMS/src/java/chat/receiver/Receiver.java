@@ -7,6 +7,7 @@ import javax.jms.ConnectionFactory;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.Queue;
+import javax.jms.QueueConnectionFactory;
 
 public class Receiver {
     

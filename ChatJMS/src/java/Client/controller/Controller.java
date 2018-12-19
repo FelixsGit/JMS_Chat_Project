@@ -6,18 +6,18 @@ import java.util.concurrent.CompletableFuture;
 
 public class Controller {
     
-        private final ChatConnection chatConnection = new ChatConnection();
-        
-   
+        ChatConnection chatConnection = new ChatConnection();
+    
+
         public void joinChat(OutputHandler outputHandler){
             CompletableFuture.runAsync(() -> {
                  chatConnection.joinChat(outputHandler);
-        });
+       });
            
              
         }
         public void sendMessage(String message){
-            CompletableFuture.runAsync(() -> {
+           CompletableFuture.runAsync(() -> {
                  chatConnection.sendMessage(message);
         });
         }

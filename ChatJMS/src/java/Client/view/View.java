@@ -17,7 +17,7 @@ public class View {
         inputReader.start();
     }
     
-     private class InputReader extends Thread{
+   private class InputReader extends Thread{
         public void run(){
             Scanner scan = new Scanner(System.in);
             try{
@@ -27,7 +27,7 @@ public class View {
                 controller.joinChat(new ConsoleOutput());
                 String message;
                 while (true) {
-                    System.out.print("Say: ");
+                    //System.out.print("Say: ");
                     if ((message = scan.nextLine()) != null) {
                         if(message.equals("QUIT")){
                             controller.sendMessage("User "+username+" disconnected from chat");

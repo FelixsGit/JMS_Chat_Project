@@ -6,6 +6,7 @@ import javax.jms.ConnectionFactory;
 import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
 import javax.jms.Queue;
+import javax.jms.QueueConnectionFactory;
 
 public class Sender {
 
