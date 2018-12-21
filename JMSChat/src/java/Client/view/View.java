@@ -35,7 +35,6 @@ public class View {
                     String message;
                     while (true) {
                         if ((message = scan.nextLine()) != null && chatting) {
-                            controller.sendMessage("User");
                             if(message.equals("QUIT")){
                                 controller.sendMessage("User "+username+" disconnected from chat");
                                 chatting = false;
