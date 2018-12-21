@@ -34,15 +34,19 @@ public class Main {
     @Resource(mappedName="jsm/chatTopic")
     private static Topic topic;
     
+    @Resource(mappedName="jsm/chatTopic2")
+    private static Topic topic2;
+    
     public static void main(String[] arg) {
         
         ChatRecorder.connectionFactory = connectionFactory;
         ChatRecorder.topic = topic;
-        
+       
         ClientHandler.connectionFactory = connectionFactory;
         ClientHandler.queue = queue;
         ClientHandler.queue2 = queue2;
         ClientHandler.queue3 = queue3;
+        ClientHandler.topic2 = topic2;
        
         Conversation conversation = new Conversation();
         ClientHandler clientHandler = new ClientHandler(conversation);

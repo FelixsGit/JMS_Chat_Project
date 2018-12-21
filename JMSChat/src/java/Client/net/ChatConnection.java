@@ -1,7 +1,11 @@
 package Client.net;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
+import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
@@ -13,9 +17,9 @@ public class ChatConnection {
     
     public static ConnectionFactory connectionFactory;
     public static Queue queue;
-    public static Queue queue2;
     public static Queue queue3;
     public static Topic topic;
+    public static Topic topic2;
     
     /**
      * This method is responsible for starting the listener and joining the chat
@@ -24,17 +28,22 @@ public class ChatConnection {
     public void joinChat(){
          JMSContext jmsContext = connectionFactory.createContext();
          JMSProducer jmsProducer = jmsContext.createProducer();
+         jmsProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
+         jmsProducer.setPriority(9);
          jmsProducer.send(queue, "new");   
     }
     
     public void sendMessage(String message){
         JMSContext jmsContext = connectionFactory.createContext();
         JMSProducer jmsProducer = jmsContext.createProducer();  
-        jmsProducer.send(topic, message);
+        jmsProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
+        jmsProducer.setPriority(9);
+        String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
+        jmsProducer.send(topic, timeStamp+"-->"+message);
     }
     
-    public void startListener(OutputHandler outputHandler){
-        Listener listener = new Listener(outputHandler, this);
+    public void startListener(OutputHandler outputHandler, String username){
+        Listener listener = new Listener(outputHandler, this, username);
         listener.start();
     }
     
@@ -43,40 +52,24 @@ public class ChatConnection {
 
         private final OutputHandler outputHandler;
         private ChatConnection chatConnection;
+        private final String username;
         
-        public Listener(OutputHandler outputHandler, ChatConnection chatConnection){
+        public Listener(OutputHandler outputHandler, ChatConnection chatConnection, String username){
             this.outputHandler = outputHandler;
             this.chatConnection = chatConnection;
+            this.username = username;
         }
 
         public void run(){
-                 JMSContext jmsContext = connectionFactory.createContext();        
+                 JMSContext jmsContext = connectionFactory.createContext();
                  //Listening on queue
                  try{                
                         JMSConsumer jmsConsumerQ3 = jmsContext.createConsumer(queue3);                     
-                        JMSConsumer jmsConsumerQ2 = jmsContext.createConsumer(queue2); 
-                        /*
-                        while(true){
-                            LinkedList<String> mClearQ2 = jmsConsumerQ2.receiveBodyNoWait(LinkedList.class);
-                            if(mClearQ2 == null){
-                                break;
-                            }
-                        }
-                        */
-                        //System.out.println("Spinning to flush queue3");
-                        while(true){
-                            String mClear = jmsConsumerQ3.receiveBodyNoWait(String.class);
-                            if(mClear == null){
-                                break;
-                            }
-                        }
-                        //System.out.println("done flusing queue3");
-                        //System.out.println("waiting for done");
+                        JMSConsumer jmsConsumerT2 = jmsContext.createConsumer(topic2);
                         String message = jmsConsumerQ3.receiveBody(String.class);
                         //System.out.println("received msg: "+message+ " from queue3");
                         if(message.equals("done")){
-                            //System.out.println("Starting to collect data....");
-                            LinkedList<String> listMsg = jmsConsumerQ2.receiveBody(LinkedList.class, 10000);
+                            LinkedList<String> listMsg = jmsConsumerT2.receiveBody(LinkedList.class, 2000);
                            if(listMsg != null){
                                 while(!listMsg.isEmpty()){
                                     String msgToSend = listMsg.getFirst();
@@ -86,14 +79,14 @@ public class ChatConnection {
                             }
                         }
                         //System.out.println("continuing to live...");
-                       //jmsConsumerQ2.close(); 
-                        //jmsConsumerQ3.close();
+                       jmsConsumerQ3.close();
                  }catch (Exception e){
                      e.printStackTrace();
                      }
                 
-                 //chatConnection.sendMessage("new user joined chat");
-                 outputHandler.handleMessage("live ->");
+                 chatConnection.sendMessage("User "+username+" joined chat");
+                 outputHandler.handleMessage("Live ->");
+                 outputHandler.handlePrivateMessage("joined");
                  
                  //Listening on topic
                  try{

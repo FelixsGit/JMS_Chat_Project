@@ -21,14 +21,14 @@ public class Main {
     @Resource(mappedName = "jsm/chatQueue")
     private static Queue queue;
     
-    @Resource(mappedName = "jsm/chatQueue2")
-    private static Queue queue2;
-    
     @Resource(mappedName = "jsm/chatQueue3")
     private static Queue queue3;
     
     @Resource(mappedName = "jsm/chatTopic")
     private static Topic topic;
+    
+    @Resource(mappedName = "jsm/chatTopic2")
+    private static Topic topic2;
     
     /**
      * Method is called when the client start the applications
@@ -39,7 +39,7 @@ public class Main {
         ChatConnection.connectionFactory = Main.connectionFactory;
         ChatConnection.queue = Main.queue;
         ChatConnection.topic = Main.topic;
-        ChatConnection.queue2 = Main.queue2;
+        ChatConnection.topic2 = Main.topic2;
         ChatConnection.queue3 = Main.queue3;
         
         View view = new View();

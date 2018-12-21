@@ -5,9 +5,10 @@
  */
 package Server.model;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 
-public class Conversation {
+public class Conversation{
     LinkedList<String> conversation = new LinkedList<String>();
     
     

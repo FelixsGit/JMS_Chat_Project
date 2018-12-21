@@ -6,7 +6,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class Controller {
     
-        private final ChatConnection chatConnection = new ChatConnection();
+        private ChatConnection chatConnection = new ChatConnection();
 
         public void joinChat(){
             CompletableFuture.runAsync(() -> {
@@ -14,9 +14,9 @@ public class Controller {
        });
         }
         
-        public void startListener(OutputHandler outputHandler){
+        public void startListener(OutputHandler outputHandler, String username){
              CompletableFuture.runAsync(() -> {
-                 chatConnection.startListener(outputHandler);
+                 chatConnection.startListener(outputHandler, username);
          });
         }
         
@@ -25,7 +25,7 @@ public class Controller {
            CompletableFuture.runAsync(() -> {
                  chatConnection.sendMessage(message);
          });
-    }
+}
 
 }
         
