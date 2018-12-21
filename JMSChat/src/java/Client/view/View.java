@@ -13,7 +13,6 @@ public class View {
     private String username;
   
     public void startUp(){
-        controller.startListener(new ConsoleOutput());
         InputReader inputReader = new InputReader();
         inputReader.start();
     }
@@ -24,17 +23,21 @@ public class View {
             try{
                 System.out.println("Welcome to the chat application! Please enter your username");
                 username = scan.nextLine();
-                System.out.println("Nice to see you "+username+", to leave chat type: QUIT\nJoining chat...");
-                controller.joinChat();
-                String message;
-                while (true) {
+                System.out.println("Nice to see you "+username+", to leave chat type: QUIT, to join chat type JOIN");
+                controller.startListener(new ConsoleOutput());
+                if(scan.nextLine().equals("JOIN")){
+                    System.out.println("joining chat...");
+                    controller.joinChat();
+                    String message;
+                    while (true) {
                     //System.out.print("Say: ");
-                    if ((message = scan.nextLine()) != null) {
-                        if(message.equals("QUIT")){
-                            controller.sendMessage("User "+username+" disconnected from chat");
-                            break;
+                        if ((message = scan.nextLine()) != null) {
+                            if(message.equals("QUIT")){
+                                controller.sendMessage("User "+username+" disconnected from chat");
+                                break;
+                            }
+                            controller.sendMessage(username+": "+message);
                         }
-                        controller.sendMessage(username+": "+message);
                     }
                 }
             }catch (Exception e){

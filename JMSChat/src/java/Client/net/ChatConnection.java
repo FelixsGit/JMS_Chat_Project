@@ -1,12 +1,11 @@
 package Client.net;
 
-import java.util.Enumeration;
+import java.util.LinkedList;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSConsumer;
 import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
 import javax.jms.Queue;
-import javax.jms.QueueBrowser;
 import javax.jms.Topic;
 
 public class ChatConnection {
@@ -53,27 +52,45 @@ public class ChatConnection {
         public void run(){
                  JMSContext jmsContext = connectionFactory.createContext();        
                  //Listening on queue
-                 try{
-                        JMSConsumer jmsConsumerQ3 = jmsContext.createConsumer(queue3); 
+                 try{                
+                        JMSConsumer jmsConsumerQ3 = jmsContext.createConsumer(queue3);                     
                         JMSConsumer jmsConsumerQ2 = jmsContext.createConsumer(queue2); 
-                        //System.out.println("waiting on done");
+                        /*
+                        while(true){
+                            LinkedList<String> mClearQ2 = jmsConsumerQ2.receiveBodyNoWait(LinkedList.class);
+                            if(mClearQ2 == null){
+                                break;
+                            }
+                        }
+                        */
+                        //System.out.println("Spinning to flush queue3");
+                        while(true){
+                            String mClear = jmsConsumerQ3.receiveBodyNoWait(String.class);
+                            if(mClear == null){
+                                break;
+                            }
+                        }
+                        //System.out.println("done flusing queue3");
+                        //System.out.println("waiting for done");
                         String message = jmsConsumerQ3.receiveBody(String.class);
-                       // System.out.println("received done message");
+                        //System.out.println("received msg: "+message+ " from queue3");
                         if(message.equals("done")){
-                            for(;;){
-                                //System.out.println("taking msg from queue2");
-                                String msg = jmsConsumerQ2.receiveBodyNoWait(String.class);
-                                //System.out.println("received msg: "+msg);
-                                if(msg == null){
-                                    //System.out.println("done collecting chat history");
-                                    break;
+                            //System.out.println("Starting to collect data....");
+                            LinkedList<String> listMsg = jmsConsumerQ2.receiveBody(LinkedList.class, 10000);
+                           if(listMsg != null){
+                                while(!listMsg.isEmpty()){
+                                    String msgToSend = listMsg.getFirst();
+                                    listMsg.removeFirst();
+                                    outputHandler.handleMessage(msgToSend);
                                 }
-                                outputHandler.handleMessage(msg);
-                             }
-                         } 
-                     }catch (Exception e){
+                            }
+                        }
+                        //System.out.println("continuing to live...");
+                       //jmsConsumerQ2.close(); 
+                        //jmsConsumerQ3.close();
+                 }catch (Exception e){
                      e.printStackTrace();
-                    }
+                     }
                 
                  //chatConnection.sendMessage("new user joined chat");
                  outputHandler.handleMessage("live ->");

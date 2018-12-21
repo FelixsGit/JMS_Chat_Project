@@ -5,9 +5,7 @@
  */
 package Server.model;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 
 public class Conversation {
     LinkedList<String> conversation = new LinkedList<String>();
@@ -19,5 +17,9 @@ public class Conversation {
     
     public void storeMsg(String msg) {
         conversation.addLast(msg);
+    }
+    
+    public void removeMsg(){
+        conversation.removeLast();
     }
 }
