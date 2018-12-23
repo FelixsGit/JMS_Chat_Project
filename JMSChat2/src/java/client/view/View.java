@@ -54,7 +54,7 @@ public class View {
                         System.err.println("Invalid input!");
                     }
                 }catch (Exception e){
-                        System.err.println("Failed to establish connection with remote server. Try again with JOIN or exit program with QUIT");
+                        System.err.println("Failed to establish connection with GlassFish JMS server. Try again with JOIN or exit program with QUIT");
                         chatting = false;
                     }
                 }
@@ -82,7 +82,7 @@ public class View {
             if(msg.equals("connectionOK")){
                 chatting = true;
             }else if(msg.equals("listenerFailure")){
-                System.err.println("Failed to recieve chat message, Try to  reconnect with JOIN or exit with QUIT");
+                System.err.println("Disconnected. Failed to recieve chat message, try to  reconnect with JOIN or exit with QUIT");
                 chatting = false;
             }
         }
