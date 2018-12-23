@@ -2,7 +2,7 @@ package client.controller;
 
 import client.net.ChatConnection;
 import client.net.OutputHandler;
-import common.ConnectionException;
+import client.net.ConnectionException;
 import java.util.concurrent.CompletableFuture;
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;

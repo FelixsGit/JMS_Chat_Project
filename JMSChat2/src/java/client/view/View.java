@@ -54,12 +54,8 @@ public class View {
                         System.err.println("Invalid input!");
                     }
                 }catch (Exception e){
-                    if(e.getMessage().contains("Failed to send message")){
-                        e.getMessage();
-                        System.err.println("qutting...");
-                        quit();
-                    }else{
                         System.err.println("Failed to establish connection with remote server. Try again with JOIN or exit program with QUIT");
+                        chatting = false;
                     }
                 }
             }
@@ -68,7 +64,6 @@ public class View {
         private void quit(){
             System.exit(1);
         }
-    }
    
      private class ConsoleOutput implements OutputHandler{
          
@@ -86,6 +81,9 @@ public class View {
         public void handleConnectionMessage(String msg){
             if(msg.equals("connectionOK")){
                 chatting = true;
+            }else if(msg.equals("listenerFailure")){
+                System.err.println("Failed to recieve chat message, Try to  reconnect with JOIN or exit with QUIT");
+                chatting = false;
             }
         }
     }

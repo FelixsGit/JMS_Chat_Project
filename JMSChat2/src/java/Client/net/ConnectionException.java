@@ -1,4 +1,4 @@
-package common;
+package client.net;
 
 public class ConnectionException extends Exception{
     

@@ -1,13 +1,7 @@
 package client.net;
 
-import common.ConnectionException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
@@ -89,11 +83,7 @@ public class ChatConnection {
     }
 
     private void startListener(OutputHandler outputHandler) throws Exception {
-        try{
             listener = new Listener(outputHandler);
-        }catch(Exception e){
-            throw new Exception("Failed to leave chat");
-        }
     }
 
     @SuppressWarnings("InfiniteLoopStatement")
@@ -110,8 +100,8 @@ public class ChatConnection {
                 topicSession = topicConnection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
                 topicSession.createSubscriber(topic).setMessageListener(this);
                 topicConnection.start();
-            } catch (Exception ex) {
-                throw new Exception("Listener failure");
+            } catch (JMSException ex) {
+                throw new Exception("ListenerConnectionError");
             }          
         }
         
@@ -125,7 +115,7 @@ public class ChatConnection {
             try {
                 outputHandler.handleMessage(message.getBody(String.class));
             } catch (JMSException ex) {
-                Logger.getLogger(ChatConnection.class.getName()).log(Level.SEVERE, null, ex);
+                 outputHandler.handleConnectionMessage("listenerFailure");
             }
         }
     }
