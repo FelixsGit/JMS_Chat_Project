@@ -1,4 +1,4 @@
-package Client.net;
+package client.net;
 
 import common.ConnectionException;
 import java.text.SimpleDateFormat;
@@ -25,22 +25,51 @@ import javax.jms.TopicSession;
 
 public class ChatConnection {
 
-    public static ConnectionFactory connectionFactory;
-    public static TopicConnectionFactory tcf;
-    public static Queue clientQueue;
-    public static Topic topic;
+    private static ConnectionFactory connectionFactory;
+    private static TopicConnectionFactory tcf;
+    private static Queue clientQueue;
+    private static Topic topic;
     private OutputHandler outputHandler;
     private Listener listener;
+  
+    public ChatConnection(ConnectionFactory cf, TopicConnectionFactory tcf, Queue clientQueue, Topic topic){
+        this.connectionFactory = cf;
+        this.tcf = tcf;
+        this.clientQueue = clientQueue;
+        this.topic = topic;
+    }
 
     public void joinChat(OutputHandler outputHandler, String username) throws ConnectionException{
             this.outputHandler = outputHandler;
-            ChatJoiner chatJoiner = new ChatJoiner(outputHandler, username);
-            ExecutorService threadExecutor = Executors.newSingleThreadExecutor();
             try{
-                threadExecutor.submit(chatJoiner).get();
+                JMSContext jmsContext = connectionFactory.createContext();
+                TemporaryQueue queue = jmsContext.createTemporaryQueue();
+                JMSProducer jmsProducer = jmsContext.createProducer().setJMSReplyTo(queue);
+                JMSConsumer jmsConsumer = jmsContext.createConsumer(queue);
+                jmsProducer.send((Destination) clientQueue, "###");
+                while (true) {
+                    String msg = jmsConsumer.receiveBody(String.class, 5000);
+                    if (msg == null) {
+                        outputHandler.handleMessage("FAILED TO RETRIEVE CHAT HISTORY");
+                        break;
+                    }else if(msg.equals("done")){
+                        break;
+                    }else{
+                        outputHandler.handleMessage(msg);
+                    }
+                }
+                sendMessage("User "+username+" joined the chat");
+                outputHandler.handleMessage("Live-->");
+                outputHandler.handleConnectionMessage("connectionOK");
+                closeContext(jmsContext);
+                startListener(outputHandler);
             }catch(Exception e){
-                    throw new ConnectionException("Server connection failed");
+                throw new ConnectionException(e.getMessage());
             }
+    }
+    
+    private void closeContext(JMSContext jmsContext){
+        jmsContext.close();
     }
 
     public void sendMessage(String message){
@@ -49,13 +78,14 @@ public class ChatConnection {
             JMSProducer jmsProducer = jmsContext.createProducer();
             String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date());
             jmsProducer.send(topic, timeStamp+"->"+message);
+            closeContext(jmsContext);
         }catch(Exception e){
             outputHandler.reportMessageSendingFailure("Failed to send message");
         }
     }
     
     public void leaveChat() throws Exception{
-        listener.disconnect();
+        listener.stopTopicListener();
     }
 
     private void startListener(OutputHandler outputHandler) throws Exception {
@@ -71,12 +101,13 @@ public class ChatConnection {
 
         private final OutputHandler outputHandler;
         private TopicConnection topicConnection;
+        private TopicSession topicSession;
 
         public Listener(OutputHandler outputHandler) throws Exception {
             this.outputHandler = outputHandler;
             try {
                 topicConnection = tcf.createTopicConnection();
-                TopicSession topicSession = topicConnection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
+                topicSession = topicConnection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
                 topicSession.createSubscriber(topic).setMessageListener(this);
                 topicConnection.start();
             } catch (Exception ex) {
@@ -84,7 +115,8 @@ public class ChatConnection {
             }          
         }
         
-        public void disconnect() throws Exception{
+        public void stopTopicListener() throws Exception{
+            topicSession.close();
             topicConnection.close();
         }
 
@@ -95,45 +127,6 @@ public class ChatConnection {
             } catch (JMSException ex) {
                 Logger.getLogger(ChatConnection.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
-    }
-      private class ChatJoiner implements Callable{
-        
-        private OutputHandler outputHandler;
-        private String username;
-        
-        public ChatJoiner(OutputHandler outputHandler, String username){
-            this.outputHandler = outputHandler;
-            this.username = username;
-        }
-        
-        @Override
-        public Integer call() throws Exception{
-            try{
-                JMSContext jmsContext = connectionFactory.createContext();
-                TemporaryQueue queue = jmsContext.createTemporaryQueue();
-                JMSProducer jmsProducer = jmsContext.createProducer().setJMSReplyTo(queue);
-                JMSConsumer jmsConsumer = jmsContext.createConsumer(queue);
-                jmsProducer.send((Destination) clientQueue, "###");
-                while (true) {
-                    String msg = jmsConsumer.receiveBody(String.class, 5000);
-                    if (msg == null) {
-                        outputHandler.handleMessage("FAILED TO RETRIEVE CHAT HISTORY");
-                        break;
-                    }else if(msg.equals("done")){
-                        sendMessage("User "+username+" joined the chat");
-                        break;
-                    }else{
-                        outputHandler.handleMessage(msg);
-                    }
-                }
-                outputHandler.handleMessage("Live-->");
-                outputHandler.handleConnectionMessage("connectionOK");
-                startListener(outputHandler);
-            }catch(Exception e){
-                throw new Exception(e.getMessage());
-            }
-            return null;
         }
     }
 }

@@ -1,16 +1,21 @@
-package Client.view;
+package client.view;
 
-import Client.controller.Controller;
-import Client.net.OutputHandler;
+import client.controller.Controller;
+import client.net.OutputHandler;
 import java.util.Scanner;
+import javax.jms.ConnectionFactory;
+import javax.jms.Queue;
+import javax.jms.Topic;
+import javax.jms.TopicConnectionFactory;
 
 public class View {
     
-    private final Controller controller = new Controller();
+    private Controller controller;
     private String username;
     private boolean chatting = false;
   
-    public void startUp(){
+    public void startUp(ConnectionFactory cf, TopicConnectionFactory tcf, Queue clientQueue, Topic topic){
+        this.controller = new Controller(cf, tcf, clientQueue, topic);
         InputReader inputReader = new InputReader();
         inputReader.start();
     }

@@ -1,4 +1,4 @@
-package Client.net;
+package client.net;
 
 public interface OutputHandler {
    

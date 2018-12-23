@@ -13,14 +13,27 @@ public class ChatRecorder implements MessageListener {
     
     private ClientHandler clientHandler;
     
-    public ChatRecorder(ClientHandler clientHandler, TopicConnectionFactory tcf, Topic topic) throws JMSException {
+    public ChatRecorder(ClientHandler clientHandler, TopicConnectionFactory tcf, Topic topic) throws FailedToInitializeChatRecorderException {
         this.clientHandler = clientHandler;
-        TopicConnection topicConnection = tcf.createTopicConnection();
-        TopicSession topicSession = topicConnection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
-        topicSession.createSubscriber(topic).setMessageListener(this);
-        topicConnection.start();
+        initializeTopicListener(tcf, topic);
+    }
+    
+    private void initializeTopicListener(TopicConnectionFactory tcf, Topic topic) throws FailedToInitializeChatRecorderException {
+        try {
+            TopicConnection topicConnection = tcf.createTopicConnection();
+            TopicSession topicSession = topicConnection.createTopicSession(false, TopicSession.AUTO_ACKNOWLEDGE);
+            topicSession.createSubscriber(topic).setMessageListener(this);
+            topicConnection.start();
+        } catch (JMSException jmse) {
+            throw new FailedToInitializeChatRecorderException(jmse);
+        }
     }
 
+    /**
+     *
+     * @param message
+     * @throws JMSException
+     */
     @Override
     public void onMessage(Message message) {
         try {

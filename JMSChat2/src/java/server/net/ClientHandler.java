@@ -14,16 +14,16 @@ import javax.jms.Queue;
 public class ClientHandler {
     
     private Conversation conversation = new Conversation();
-    JMSContext jmsContext;
-    JMSConsumer jmsPrimaryConsumer;
-    JMSConsumer jmsSecondaryConsumer;
-    JMSProducer jmsProducer;
-    Queue clientQueue;
     
-    public ClientHandler(ConnectionFactory connectionFactory, Queue clientQueue, Queue msgQueue, Queue confirmQueue) {
-        jmsContext = connectionFactory.createContext();
-        jmsPrimaryConsumer = jmsContext.createConsumer(clientQueue);
-        jmsProducer = jmsContext.createProducer();
+    private JMSContext jmsContext;
+    private JMSConsumer jmsConsumer;
+    private JMSProducer jmsProducer;
+    private Queue clientQueue;
+    
+    public ClientHandler(ConnectionFactory connectionFactory, Queue clientQueue) {
+        this.jmsContext = connectionFactory.createContext();
+        this.jmsConsumer = jmsContext.createConsumer(clientQueue);
+        this.jmsProducer = jmsContext.createProducer();
         this.clientQueue = clientQueue;
     }
     
@@ -31,27 +31,57 @@ public class ClientHandler {
         conversation.storeMsg(msg);
     }
     
-    public void startClientHandler() throws InterruptedException, JMSException {
-        listenForNewUsers();
-    }
-    
-    private void listenForNewUsers() throws InterruptedException, JMSException {
-        System.out.println("Starting to handle clients!");
-        while (true) {
-            Message msg = jmsPrimaryConsumer.receive();
-            if (msg.getBody(String.class).equals("###")) {
-                Queue msgQueue = (Queue) msg.getJMSReplyTo();
-                System.out.println("Message caught " + msg.getBody(String.class));
-                List<String> messages = conversation.getMessages();
-                for (int i = 0; i < messages.size(); i++) {
-                    System.out.println("Sending: " + messages.get(i));
-                    jmsProducer.send((Destination) msgQueue, messages.get(i));
-                }
-                jmsProducer.send((Destination) msgQueue, "done");
-                System.out.println("Sending a break call****************");
-            }
-            
+    public void startClientHandler() throws FailedToStartClientHandlerException {
+        try {
+            listenForNewUsers();
+        } catch (InterruptedException | JMSException e) {
+            throw new FailedToStartClientHandlerException(e);
         }
     }
     
+    private void listenForNewUsers() throws InterruptedException, JMSException {
+        //This part is responsible for flushing old chat history requests on startup.
+        while(true){
+            Message flush = jmsConsumer.receiveNoWait();
+            if(flush == null){
+                break;
+            }
+        }
+        System.out.println("Starting to handle clients!");
+        while (true) {
+            Message msg = jmsConsumer.receive();
+            if (newConnectingClient(msg)) {
+                Queue msgQueue = getClientPrivateQueue(msg);
+                System.out.println("Message caught " + msg.getBody(String.class));
+                sendAllEntriesToClient(msgQueue);           
+            }
+        }
+    }
+    
+    private boolean newConnectingClient(Message msg) throws JMSException {
+        return msg.getBody(String.class).equals("###");
+    }
+    
+    private Queue getClientPrivateQueue(Message msg) throws JMSException {
+        return (Queue) msg.getJMSReplyTo();
+    }
+    
+    private void sendAllEntriesToClient(Queue msgQueue) {
+        List<String> messages = conversation.getMessages();
+        for (int i = 0; i < messages.size(); i++) {
+                    sendMsg(messages.get(i), msgQueue);
+                }
+                sendConfirmationMsg(msgQueue);
+    }
+    
+    private void sendMsg(String item, Queue msgQueue) {
+        System.out.println("Sending: " + item);
+        jmsProducer.send((Destination) msgQueue, item);
+    }
+    
+    private void sendConfirmationMsg(Queue msgQueue) {
+        jmsProducer.send((Destination) msgQueue, "done");
+        System.out.println("Sending a break call****************");
+    }
+   
 }

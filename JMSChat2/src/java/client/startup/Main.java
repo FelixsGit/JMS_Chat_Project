@@ -1,7 +1,7 @@
-package Client.startup;
+package client.startup;
 
-import Client.net.ChatConnection;
-import Client.view.View;
+import client.net.ChatConnection;
+import client.view.View;
 import javax.annotation.Resource;
 import javax.jms.ConnectionFactory;
 import javax.jms.Queue;
@@ -29,13 +29,8 @@ public class Main {
      */
     public static void main(String[] args) {
 
-        ChatConnection.connectionFactory = connectionFactory;
-        ChatConnection.clientQueue = clientQueue;
-        ChatConnection.topic = topic;
-        ChatConnection.tcf = tcf;
-
         View view = new View();
-        view.startUp();
+        view.startUp(connectionFactory, tcf, clientQueue, topic);
     }
 
 }
