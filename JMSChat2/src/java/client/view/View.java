@@ -74,12 +74,7 @@ public class View {
         public void reportMessageSendingFailure(String report){
             System.err.println(report);
         }
-        
-        @Override
-        public void reportChatHistoryLoss(String report){
-            System.err.println(report);
-        }
-        
+       
         @Override
         public void handleConnectionMessage(String msg){
             if(msg.equals("connectionOK")){

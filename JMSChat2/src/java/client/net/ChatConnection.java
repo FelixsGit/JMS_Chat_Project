@@ -25,7 +25,6 @@ public class ChatConnection {
     private static Topic topic;
     private OutputHandler outputHandler;
     private Listener listener;
-    private boolean possibleChatHistoryLoss = false;
   
     public ChatConnection(ConnectionFactory cf, TopicConnectionFactory tcf, Queue clientQueue, Topic topic){
         this.connectionFactory = cf;
@@ -41,24 +40,15 @@ public class ChatConnection {
                 TemporaryQueue queue = jmsContext.createTemporaryQueue();
                 JMSProducer jmsProducer = jmsContext.createProducer().setJMSReplyTo(queue);
                 JMSConsumer jmsConsumer = jmsContext.createConsumer(queue);
-                if(possibleChatHistoryLoss){
-                    jmsProducer.send((Destination) clientQueue, "##");
-                }
                 jmsProducer.send((Destination) clientQueue, "###");
                 while (true) {
                     String msg = jmsConsumer.receiveBody(String.class, 5000);
                     if (msg == null) {
-                        possibleChatHistoryLoss = true;
                         outputHandler.handleMessage("FAILED TO RETRIEVE CHAT HISTORY");
                         break;
                     }else if(msg.equals("done")){
                         break;
-                    }else if(msg.equals("done_loss")){
-                        outputHandler.reportChatHistoryLoss("Parts of chat-history might be missing because of an previous server crash");
-                        possibleChatHistoryLoss = true;
-                        break;
-                    }
-                    else{
+                    }else{
                         outputHandler.handleMessage(msg);
                     }
                 }

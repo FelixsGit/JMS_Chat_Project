@@ -60,14 +60,7 @@ public class ClientHandler {
     }
     
     private boolean newConnectingClient(Message msg) throws JMSException {
-        if(msg.getBody(String.class).equals("###")){
-            return true;
-        }else if(msg.getBody(String.class).equals("##")){
-            possibleChatHistoryLoss = true;
-            return true;
-        }else{
-            return false;
-        }
+        return (msg.getBody(String.class).equals("###"));
     }
     
     private Queue getClientPrivateQueue(Message msg) throws JMSException {
@@ -88,11 +81,7 @@ public class ClientHandler {
     }
     
     private void sendConfirmationMsg(Queue msgQueue) {
-        if(possibleChatHistoryLoss){
-            jmsProducer.send((Destination) msgQueue, "done_loss");
-        }else{
-             jmsProducer.send((Destination) msgQueue, "done");
-        }
+        jmsProducer.send((Destination) msgQueue, "done");
         System.out.println("Sending a break call****************");
     }
    
