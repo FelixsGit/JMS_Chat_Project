@@ -55,6 +55,7 @@ public class ChatConnection {
                         break;
                     }else if(msg.equals("done_loss")){
                         outputHandler.reportChatHistoryLoss("Parts of chat-history might be missing because of an previous server crash");
+                        possibleChatHistoryLoss = true;
                         break;
                     }
                     else{
