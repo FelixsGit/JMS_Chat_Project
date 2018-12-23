@@ -32,13 +32,7 @@ public class View {
                             if(chatting){
                                 if ((message = scan.nextLine()) != null) {
                                     if(message.equals("LEAVE_CHAT")){
-                                       try{
-                                            controller.leaveChat();
-                                        }catch(Exception e){
-                                            e.getMessage();
-                                            System.err.println("force qutting...");
-                                            System.exit(1);
-                                        }
+                                        controller.leaveChat();     
                                         System.out.println("You left the chat..., to join type: JOIN, to exit program type: QUIT");                                 
                                         controller.sendMessage("User "+username+" disconnected from chat");
                                         chatting = false;
@@ -50,22 +44,27 @@ public class View {
                         }
                     }else if(input.equals("QUIT")){
                         System.out.print("Quting program");
-                        System.exit(1);
+                        quit();
                     }else{
                         System.err.println("Invalid input!");
                     }
                 }catch (Exception e){
-                    if(e.getMessage().contains("failed to leave chat")){
-                        System.err.println(e.getMessage());
+                    if(e.getMessage().contains("Failed to send message")){
+                        e.getMessage();
+                        System.err.println("qutting...");
+                        quit();
                     }else{
                         System.err.println("Failed to establish connection with remote server. Try again with JOIN or exit program with QUIT");
                     }
-                    continue;
                 }
             }
         }
+        
+        private void quit(){
+            System.exit(1);
+        }
     }
-     
+   
      private class ConsoleOutput implements OutputHandler{
          
         @Override
@@ -79,7 +78,7 @@ public class View {
         }
         
         @Override
-        public void handlePrivateMessage(String msg){
+        public void handleConnectionMessage(String msg){
             if(msg.equals("connectionOK")){
                 chatting = true;
             }

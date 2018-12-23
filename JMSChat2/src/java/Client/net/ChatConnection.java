@@ -128,7 +128,7 @@ public class ChatConnection {
                     }
                 }
                 outputHandler.handleMessage("Live-->");
-                outputHandler.handlePrivateMessage("connectionOK");
+                outputHandler.handleConnectionMessage("connectionOK");
                 startListener(outputHandler);
             }catch(Exception e){
                 throw new Exception(e.getMessage());

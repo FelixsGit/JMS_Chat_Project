@@ -6,5 +6,5 @@ public interface OutputHandler {
     
     void reportMessageSendingFailure(String report);
     
-    void handlePrivateMessage(String message);
+    void handleConnectionMessage(String message);
 }
