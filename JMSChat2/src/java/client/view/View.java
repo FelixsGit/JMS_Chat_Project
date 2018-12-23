@@ -33,18 +33,16 @@ public class View {
                         System.out.println("joining chat... to leave the chat type: LEAVE_CHAT");
                         controller.joinChat(new ConsoleOutput(), username);
                         String message;
-                        while (true) {
-                            if(chatting){
-                                if ((message = scan.nextLine()) != null) {
-                                    if(message.equals("LEAVE_CHAT")){
-                                        controller.leaveChat();     
-                                        System.out.println("You left the chat..., to join type: JOIN, to exit program type: QUIT");                                 
-                                        controller.sendMessage("User "+username+" disconnected from chat");
-                                        chatting = false;
-                                        break;
-                                    }
-                                    controller.sendMessage(username+": "+message);
-                                }
+                        while (chatting) {
+                            if ((message = scan.nextLine()) != null) {
+                                if(message.equals("LEAVE_CHAT")){
+                                    controller.leaveChat();     
+                                    System.out.println("You left the chat..., to join type: JOIN, to exit program type: QUIT");                                 
+                                    controller.sendMessage("User "+username+" disconnected from chat");
+                                    chatting = false;
+                                    break;
+                                 }
+                                controller.sendMessage(username+": "+message);
                             }
                         }
                     }else if(input.equals("QUIT")){
@@ -74,6 +72,11 @@ public class View {
         
         @Override
         public void reportMessageSendingFailure(String report){
+            System.err.println(report);
+        }
+        
+        @Override
+        public void reportChatHistoryLoss(String report){
             System.err.println(report);
         }
         
