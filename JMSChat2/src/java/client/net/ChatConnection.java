@@ -1,5 +1,6 @@
 package client.net;
 
+import client.net.ConnectionException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.jms.ConnectionFactory;

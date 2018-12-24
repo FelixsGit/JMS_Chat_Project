@@ -12,7 +12,7 @@ public class View {
     
     private Controller controller;
     private String username;
-    private boolean chatting = false;
+    private volatile boolean chatting = false;
   
     public void startUp(ConnectionFactory cf, TopicConnectionFactory tcf, Queue clientQueue, Topic topic){
         this.controller = new Controller(cf, tcf, clientQueue, topic);
